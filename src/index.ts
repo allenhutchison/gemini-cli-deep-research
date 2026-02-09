@@ -23,7 +23,7 @@ if (!apiKey) {
   process.exit(1);
 }
 
-const client = new GoogleGenAI({ apiKey });
+const client = new GoogleGenAI({ apiKey, vertexai: false });
 
 const defaultModel = process.env.GEMINI_DEEP_RESEARCH_MODEL || process.env.GEMINI_MODEL || 'models/gemini-flash-latest';
 
