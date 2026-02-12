@@ -4,7 +4,7 @@
   "description": "A deep research extension for Gemini CLI",
   "main": "dist/index.js",
   "scripts": {
-    "start": "npm install && npm run build && node dist/index.js",
+    "start": "node scripts/start.cjs",
     "build": "node build.mjs",
     "build:dev": "tsc",
     "typecheck": "tsc --noEmit",

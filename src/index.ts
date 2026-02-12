@@ -13,6 +13,7 @@ import {
 } from '@allenhutchison/gemini-utils';
 import { WorkspaceConfigManager, WorkspaceOperationStorage } from './config/WorkspaceConfig.js';
 import * as fs from 'fs';
+import * as path from 'path';
 
 // Initialize SDK and Managers
 const apiKey = process.env.GEMINI_DEEP_RESEARCH_API_KEY || process.env.GEMINI_API_KEY;
@@ -321,8 +322,11 @@ server.registerTool(
     }
 
     const markdown = reportGenerator.generateMarkdown(interaction.outputs);
-    fs.writeFileSync(filePath, markdown);
-    return { content: [{ type: 'text', text: `Report saved to ${filePath}` }] };
+    const resolvedPath = path.isAbsolute(filePath)
+      ? filePath
+      : path.resolve(process.env.GEMINI_WORKSPACE_PATH || '.', filePath);
+    fs.writeFileSync(resolvedPath, markdown);
+    return { content: [{ type: 'text', text: `Report saved to ${resolvedPath}` }] };
   }
 );
 
