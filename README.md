@@ -16,3 +16,10 @@ You can also configure the default model used for queries (not the deep research
 2.  `GEMINI_MODEL`
 
 If neither is set, it defaults to `models/gemini-flash-latest`.
+
+## Installation
+Install the extension with:
+
+```sh
+gemini extensions install https://github.com/allenhutchison/gemini-cli-deep-research --auto-update
+```
