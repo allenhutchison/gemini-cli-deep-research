@@ -2,6 +2,15 @@
 
 This extension provides tools for performing Deep Research and managing File Search stores for Retrieval Augmented Generation (RAG). It maintains a local workspace state to simplify the research workflow.
 
+## Requirements
+
+**A paid Google AI API key is required.** Deep Research uses the Gemini Interactions API, which has separate quota from standard Gemini model calls. Free-tier API keys do not have access to this feature and will receive a `429 Too Many Requests` quota error.
+
+To get a paid key:
+1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
+2. Ensure billing is enabled on your Google Cloud project
+3. Set the key via `GEMINI_DEEP_RESEARCH_API_KEY` or `GEMINI_API_KEY` environment variable
+
 ## Workspace Caching
 
 The extension automatically manages a `.gemini-research.json` file in the current working directory. This file caches:
