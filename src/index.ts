@@ -271,20 +271,46 @@ server.registerTool(
       finalInput = `[Report Format: ${report_format}]\n\n${input}`;
     }
 
-    const interaction = await researchManager.startResearch({
-      input: finalInput,
-      model,
-      fileSearchStoreNames,
-    });
-    if (interaction.id) {
-        WorkspaceConfigManager.addResearchId(interaction.id);
+    try {
+      const interaction = await researchManager.startResearch({
+        input: finalInput,
+        model,
+        fileSearchStoreNames,
+      });
+      if (interaction.id) {
+          WorkspaceConfigManager.addResearchId(interaction.id);
+      }
+      return {
+        content: [{
+          type: 'text',
+          text: `Research started. ID: ${interaction.id}\nStatus: ${interaction.status}\nUse research_status to check progress.`
+        }]
+      };
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      const isQuotaError = message.includes('429') || message.toLowerCase().includes('quota') || message.toLowerCase().includes('too many requests');
+
+      if (isQuotaError) {
+        return {
+          isError: true,
+          content: [{
+            type: 'text',
+            text: `Deep Research quota error: ${message}\n\n` +
+              `This typically means your API key does not have access to the Deep Research feature.\n` +
+              `Deep Research requires a paid Google AI API key — free-tier keys do not have quota for this feature.\n\n` +
+              `To resolve this:\n` +
+              `1. Ensure you have a paid API key from Google AI Studio (https://aistudio.google.com/apikey)\n` +
+              `2. Verify billing is enabled on your Google Cloud project\n` +
+              `3. Set the key via GEMINI_DEEP_RESEARCH_API_KEY or GEMINI_API_KEY environment variable`,
+          }],
+        };
+      }
+
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Research failed to start: ${message}` }],
+      };
     }
-    return { 
-      content: [{ 
-        type: 'text', 
-        text: `Research started. ID: ${interaction.id}\nStatus: ${interaction.status}\nUse research_status to check progress.` 
-      }] 
-    };
   }
 );
 

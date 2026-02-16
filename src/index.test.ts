@@ -450,6 +450,46 @@ describe('MCP Server Tools', () => {
         fileSearchStoreNames: ['stores/1', 'stores/2'],
       });
     });
+
+    it('should return helpful message on 429 quota error', async () => {
+      mockStartResearch.mockRejectedValue(new Error('429 {"error":{"message":"You do not have enough quota to make this request.","code":"too_many_requests"}}'));
+
+      const result = await toolHandlers['research_start']({
+        input: 'Research topic',
+        model: 'deep-research-pro-preview-12-2025',
+      }) as McpToolResult;
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('Deep Research quota error');
+      expect(result.content[0].text).toContain('paid Google AI API key');
+      expect(result.content[0].text).toContain('aistudio.google.com');
+    });
+
+    it('should return helpful message on generic quota error', async () => {
+      mockStartResearch.mockRejectedValue(new Error('quota exceeded'));
+
+      const result = await toolHandlers['research_start']({
+        input: 'Research topic',
+        model: 'deep-research-pro-preview-12-2025',
+      }) as McpToolResult;
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('Deep Research quota error');
+    });
+
+    it('should return generic error for non-quota failures', async () => {
+      mockStartResearch.mockRejectedValue(new Error('Network connection failed'));
+
+      const result = await toolHandlers['research_start']({
+        input: 'Research topic',
+        model: 'deep-research-pro-preview-12-2025',
+      }) as McpToolResult;
+
+      expect(result.isError).toBe(true);
+      expect(result.content[0].text).toContain('Research failed to start');
+      expect(result.content[0].text).toContain('Network connection failed');
+      expect(result.content[0].text).not.toContain('paid Google AI API key');
+    });
   });
 
   describe('research_status', () => {
