@@ -2,6 +2,9 @@
 module.exports = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
+  globals: {
+    PKG_VERSION: '0.0.0-test',
+  },
   testMatch: ['**/*.test.ts'],
   collectCoverage: true,
   coverageReporters: ['text', 'lcov'],

@@ -1,6 +1,6 @@
 {
   "name": "gemini-deep-research",
-  "version": "0.0.1",
+  "version": "0.2.5",
   "contextFileName": "deep-research-GEMINI.md",
   "mcpServers": {
     "gemini-deep-research": {
