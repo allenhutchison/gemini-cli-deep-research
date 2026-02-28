@@ -34,9 +34,11 @@ const uploadOperationManager = new UploadOperationManager(new WorkspaceOperation
 const researchManager = new ResearchManager(client);
 const reportGenerator = new ReportGenerator();
 
+declare const PKG_VERSION: string;
+
 const server = new McpServer({
   name: 'gemini-deep-research',
-  version: '0.0.1',
+  version: PKG_VERSION,
 });
 
 // --- File Search Tools ---
