@@ -9,7 +9,8 @@ This extension provides tools for performing Deep Research and managing File Sea
 To configure your API key:
 1. Go to [Google AI Studio](https://aistudio.google.com/apikey) and ensure billing is enabled
 2. Run `gemini extensions config gemini-deep-research` to configure the key via extension settings
-   - Alternatively, set the `GEMINI_DEEP_RESEARCH_API_KEY` or `GEMINI_API_KEY` environment variable
+
+> **Note:** The Gemini CLI strips environment variables containing sensitive patterns (like "KEY") from MCP server processes. Setting `GEMINI_API_KEY` in your shell alone will **not** make it available to extensions. Use extension settings instead — they bypass this restriction and store the key securely in your system keychain.
 
 ## Workspace Caching
 

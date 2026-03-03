@@ -21,7 +21,9 @@ const apiKey = process.env.GEMINI_DEEP_RESEARCH_API_KEY || process.env.GEMINI_AP
 const MISSING_API_KEY_MESSAGE =
   'API key not found. Please configure the extension settings by running:\n' +
   '  gemini extensions config gemini-deep-research\n\n' +
-  'Or set GEMINI_DEEP_RESEARCH_API_KEY or GEMINI_API_KEY environment variable.\n\n' +
+  'Note: The Gemini CLI strips environment variables containing "KEY" from MCP server\n' +
+  'processes, so GEMINI_API_KEY set in your shell will not be available here.\n' +
+  'Extension settings bypass this restriction.\n\n' +
   'A paid Google AI API key is required for Deep Research features.\n' +
   'Get one at: https://aistudio.google.com/apikey';
 
