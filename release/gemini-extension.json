@@ -2,12 +2,24 @@
   "name": "gemini-deep-research",
   "version": "0.2.6",
   "contextFileName": "deep-research-GEMINI.md",
+  "settings": [
+    {
+      "name": "API Key",
+      "description": "Google AI API key for Deep Research. A paid key is required for deep research features.",
+      "envVar": "GEMINI_DEEP_RESEARCH_API_KEY",
+      "sensitive": true
+    },
+    {
+      "name": "Model",
+      "description": "Model to use for file search queries (default: models/gemini-flash-latest).",
+      "envVar": "GEMINI_DEEP_RESEARCH_MODEL",
+      "sensitive": false
+    }
+  ],
   "mcpServers": {
     "gemini-deep-research": {
       "command": "node",
-      "args": [
-        "dist/index.js"
-      ],
+      "args": ["dist/index.js"],
       "cwd": "${extensionPath}"
     }
   }
