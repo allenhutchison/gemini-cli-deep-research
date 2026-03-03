@@ -21,7 +21,7 @@ const apiKey = process.env.GEMINI_DEEP_RESEARCH_API_KEY || process.env.GEMINI_AP
 const MISSING_API_KEY_MESSAGE =
   'API key not found. Please configure the extension settings by running:\n' +
   '  gemini extensions config gemini-deep-research\n\n' +
-  'Or set the GEMINI_DEEP_RESEARCH_API_KEY environment variable.\n\n' +
+  'Or set GEMINI_DEEP_RESEARCH_API_KEY or GEMINI_API_KEY environment variable.\n\n' +
   'A paid Google AI API key is required for Deep Research features.\n' +
   'Get one at: https://aistudio.google.com/apikey';
 
@@ -118,6 +118,15 @@ server.registerTool(
     }).shape,
   },
   async ({ path: fsPath, storeName, smartSync }) => {
+    // Validate API key before starting the background upload
+    let uploader: FileUploader;
+    try {
+      uploader = getFileUploader();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { isError: true, content: [{ type: 'text', text: message }] };
+    }
+
     if (!fs.existsSync(fsPath)) {
       return { isError: true, content: [{ type: 'text', text: `Path not found: ${fsPath}` }] };
     }
@@ -139,7 +148,7 @@ server.registerTool(
           let skippedFiles = 0;
           let failedFiles = 0;
 
-          await getFileUploader().uploadDirectory(fsPath, storeName, {
+          await uploader.uploadDirectory(fsPath, storeName, {
             smartSync,
             onProgress: (event) => {
               if (event.type === 'start') {
@@ -171,7 +180,7 @@ server.registerTool(
           uploadOperationManager.markInProgress(operationId, 1);
           console.error(`[${operationId}] Starting upload of single file: ${fsPath}`);
 
-          await getFileUploader().uploadFile(fsPath, storeName);
+          await uploader.uploadFile(fsPath, storeName);
 
           uploadOperationManager.updateProgress(operationId, 1, 0, 0);
           uploadOperationManager.markCompleted(operationId);
