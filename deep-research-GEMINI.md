@@ -6,10 +6,11 @@ This extension provides tools for performing Deep Research and managing File Sea
 
 **A paid Google AI API key is required.** Deep Research uses the Gemini Interactions API, which has separate quota from standard Gemini model calls. Free-tier API keys do not have access to this feature and will receive a `429 Too Many Requests` quota error.
 
-To get a paid key:
-1. Go to [Google AI Studio](https://aistudio.google.com/apikey)
-2. Ensure billing is enabled on your Google Cloud project
-3. Set the key via `GEMINI_DEEP_RESEARCH_API_KEY` or `GEMINI_API_KEY` environment variable
+To configure your API key:
+1. Go to [Google AI Studio](https://aistudio.google.com/apikey) and ensure billing is enabled
+2. Run `gemini extensions config gemini-deep-research` to configure the key via extension settings
+
+> **Note:** The Gemini CLI strips environment variables containing sensitive patterns (like "KEY") from MCP server processes. Setting `GEMINI_API_KEY` in your shell alone will **not** make it available to extensions. Use extension settings instead — they bypass this restriction and store the key securely in your system keychain.
 
 ## Workspace Caching
 

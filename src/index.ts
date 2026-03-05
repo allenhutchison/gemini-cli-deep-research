@@ -15,23 +15,58 @@ import { WorkspaceConfigManager, WorkspaceOperationStorage } from './config/Work
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Initialize SDK and Managers
+// Initialize SDK and Managers (lazy — deferred until first tool call)
 const apiKey = process.env.GEMINI_DEEP_RESEARCH_API_KEY || process.env.GEMINI_API_KEY;
 
-if (!apiKey) {
-  console.error('Error: API key not found.');
-  console.error('Please set either GEMINI_DEEP_RESEARCH_API_KEY or GEMINI_API_KEY environment variable.');
-  process.exit(1);
-}
-
-const client = new GoogleGenAI({ apiKey, vertexai: false });
+const MISSING_API_KEY_MESSAGE =
+  'API key not found. Please configure the extension settings by running:\n' +
+  '  gemini extensions config gemini-deep-research\n\n' +
+  'Note: The Gemini CLI strips environment variables containing "KEY" from MCP server\n' +
+  'processes, so GEMINI_API_KEY set in your shell will not be available here.\n' +
+  'Extension settings bypass this restriction.\n\n' +
+  'A paid Google AI API key is required for Deep Research features.\n' +
+  'Get one at: https://aistudio.google.com/apikey';
 
 const defaultModel = process.env.GEMINI_DEEP_RESEARCH_MODEL || process.env.GEMINI_MODEL || 'models/gemini-flash-latest';
 
-const fileSearchManager = new FileSearchManager(client);
-const fileUploader = new FileUploader(client);
+// Lazy-initialized singletons
+let _client: GoogleGenAI | undefined;
+let _fileSearchManager: FileSearchManager | undefined;
+let _fileUploader: FileUploader | undefined;
+let _researchManager: ResearchManager | undefined;
+
+function getClient(): GoogleGenAI {
+  if (!apiKey) {
+    throw new Error(MISSING_API_KEY_MESSAGE);
+  }
+  if (!_client) {
+    _client = new GoogleGenAI({ apiKey, vertexai: false });
+  }
+  return _client;
+}
+
+function getFileSearchManager(): FileSearchManager {
+  if (!_fileSearchManager) {
+    _fileSearchManager = new FileSearchManager(getClient());
+  }
+  return _fileSearchManager;
+}
+
+function getFileUploader(): FileUploader {
+  if (!_fileUploader) {
+    _fileUploader = new FileUploader(getClient());
+  }
+  return _fileUploader;
+}
+
+function getResearchManager(): ResearchManager {
+  if (!_researchManager) {
+    _researchManager = new ResearchManager(getClient());
+  }
+  return _researchManager;
+}
+
 const uploadOperationManager = new UploadOperationManager(new WorkspaceOperationStorage());
-const researchManager = new ResearchManager(client);
 const reportGenerator = new ReportGenerator();
 
 declare const PKG_VERSION: string;
@@ -52,7 +87,7 @@ server.registerTool(
     }).shape,
   },
   async ({ displayName }) => {
-    const store = await fileSearchManager.createStore(displayName);
+    const store = await getFileSearchManager().createStore(displayName);
     WorkspaceConfigManager.addFileSearchStore(displayName, store.name!);
     return { content: [{ type: 'text', text: `Created store: ${store.name} (${displayName})` }] };
   }
@@ -65,7 +100,7 @@ server.registerTool(
     inputSchema: z.object({}).shape,
   },
   async () => {
-    const stores = await fileSearchManager.listStores();
+    const stores = await getFileSearchManager().listStores();
     const storeList = [];
     for await (const store of stores) {
       storeList.push({ name: store.name, displayName: store.displayName });
@@ -85,6 +120,15 @@ server.registerTool(
     }).shape,
   },
   async ({ path: fsPath, storeName, smartSync }) => {
+    // Validate API key before starting the background upload
+    let uploader: FileUploader;
+    try {
+      uploader = getFileUploader();
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      return { isError: true, content: [{ type: 'text', text: message }] };
+    }
+
     if (!fs.existsSync(fsPath)) {
       return { isError: true, content: [{ type: 'text', text: `Path not found: ${fsPath}` }] };
     }
@@ -106,7 +150,7 @@ server.registerTool(
           let skippedFiles = 0;
           let failedFiles = 0;
 
-          await fileUploader.uploadDirectory(fsPath, storeName, {
+          await uploader.uploadDirectory(fsPath, storeName, {
             smartSync,
             onProgress: (event) => {
               if (event.type === 'start') {
@@ -138,7 +182,7 @@ server.registerTool(
           uploadOperationManager.markInProgress(operationId, 1);
           console.error(`[${operationId}] Starting upload of single file: ${fsPath}`);
 
-          await fileUploader.uploadFile(fsPath, storeName);
+          await uploader.uploadFile(fsPath, storeName);
 
           uploadOperationManager.updateProgress(operationId, 1, 0, 0);
           uploadOperationManager.markCompleted(operationId);
@@ -171,7 +215,7 @@ server.registerTool(
     }).shape,
   },
   async ({ name, force }) => {
-    await fileSearchManager.deleteStore(name, force);
+    await getFileSearchManager().deleteStore(name, force);
     return { content: [{ type: 'text', text: `Deleted store: ${name}` }] };
   }
 );
@@ -233,7 +277,7 @@ server.registerTool(
   },
   async ({ query, storeName }) => {
     try {
-      const interaction: Interaction = await fileSearchManager.queryStore(storeName, query, defaultModel);
+      const interaction: Interaction = await getFileSearchManager().queryStore(storeName, query, defaultModel);
 
       // Runtime guard: ensure outputs is an array
       if (!interaction.outputs || !Array.isArray(interaction.outputs)) {
@@ -274,7 +318,7 @@ server.registerTool(
     }
 
     try {
-      const interaction = await researchManager.startResearch({
+      const interaction = await getResearchManager().startResearch({
         input: finalInput,
         model,
         fileSearchStoreNames,
@@ -325,7 +369,7 @@ server.registerTool(
     }).shape,
   },
   async ({ id }) => {
-    const interaction = await researchManager.getStatus(id);
+    const interaction = await getResearchManager().getStatus(id);
     return { content: [{ type: 'text', text: JSON.stringify(interaction, null, 2) }] };
   }
 );
@@ -340,7 +384,7 @@ server.registerTool(
     }).shape,
   },
   async ({ id, filePath }) => {
-    const interaction = await researchManager.getStatus(id);
+    const interaction = await getResearchManager().getStatus(id);
     if (interaction.status !== 'completed') {
       return { isError: true, content: [{ type: 'text', text: `Interaction ${id} is not completed. Current status: ${interaction.status}` }] };
     }
