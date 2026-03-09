@@ -28,9 +28,9 @@
   "devDependencies": {
     "@eslint/js": "^9.39.2",
     "@types/jest": "^30.0.0",
-    "@types/node": "^25.3.3",
+    "@types/node": "^25.3.5",
     "esbuild": "^0.27.3",
-    "eslint": "^10.0.2",
+    "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30.2.0",
     "prettier": "^3.8.1",
