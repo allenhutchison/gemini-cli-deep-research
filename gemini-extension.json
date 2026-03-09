@@ -1,6 +1,6 @@
 {
   "name": "gemini-deep-research",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "contextFileName": "deep-research-GEMINI.md",
   "settings": [
     {
@@ -19,7 +19,9 @@
   "mcpServers": {
     "gemini-deep-research": {
       "command": "node",
-      "args": ["scripts/start.cjs"],
+      "args": [
+        "scripts/start.cjs"
+      ],
       "cwd": "${extensionPath}"
     }
   }
