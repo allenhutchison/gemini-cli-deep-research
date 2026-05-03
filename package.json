@@ -40,7 +40,7 @@
     "typescript-eslint": "^8.58.1"
   },
   "dependencies": {
-    "@allenhutchison/gemini-utils": "^0.5.0",
+    "@allenhutchison/gemini-utils": "^0.6.0",
     "@google/genai": "^1.48.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.3.6"
