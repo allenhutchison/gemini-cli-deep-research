@@ -41,8 +41,8 @@
   },
   "dependencies": {
     "@allenhutchison/gemini-utils": "^0.5.0",
-    "@google/genai": "^1.47.0",
-    "@modelcontextprotocol/sdk": "^1.28.0",
+    "@google/genai": "^1.48.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "zod": "^4.3.6"
   }
 }
