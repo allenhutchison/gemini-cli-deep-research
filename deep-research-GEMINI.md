@@ -44,7 +44,7 @@ When performing research or querying data, strictly follow this ordering:
     -   Upload necessary files or directories using `file_search_upload`. **Crucial**: Grounding only works on files that have been successfully uploaded to a store.
 
 2.  **Execution**:
-    -   For broad, multi-step investigations: Use `research_start`.
+    -   For broad, multi-step investigations: Use `research_start`. The bundled `deep-research-start` skill auto-activates when the user asks for a deep research / investigation / comprehensive report and walks through prompt refinement, format selection, grounding, and the `research_start` call.
     -   For direct questions about specific files: Use `file_search_query`.
 
 3.  **Completion**:
