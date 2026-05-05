@@ -28,6 +28,7 @@ describe('WorkspaceConfigManager', () => {
       'my-store': 'stores/store-456',
     },
     uploadOperations: {},
+    pendingResearch: {},
   };
 
   beforeEach(() => {
@@ -47,7 +48,7 @@ describe('WorkspaceConfigManager', () => {
     mockExistsSync.mockReturnValue(false);
 
     const config = WorkspaceConfigManager.load();
-    expect(config).toEqual({ researchIds: [], fileSearchStores: {}, uploadOperations: {} });
+    expect(config).toEqual({ researchIds: [], fileSearchStores: {}, uploadOperations: {}, pendingResearch: {} });
   });
 
   it('should save config', () => {
@@ -89,7 +90,7 @@ describe('WorkspaceConfigManager', () => {
 
     const config = WorkspaceConfigManager.load();
 
-    expect(config).toEqual({ researchIds: [], fileSearchStores: {}, uploadOperations: {} });
+    expect(config).toEqual({ researchIds: [], fileSearchStores: {}, uploadOperations: {}, pendingResearch: {} });
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('Failed to load workspace config'),
       expect.anything()
@@ -105,7 +106,7 @@ describe('WorkspaceConfigManager', () => {
 
     const config = WorkspaceConfigManager.load();
 
-    expect(config).toEqual({ researchIds: [], fileSearchStores: {}, uploadOperations: {} });
+    expect(config).toEqual({ researchIds: [], fileSearchStores: {}, uploadOperations: {}, pendingResearch: {} });
     expect(warnSpy).toHaveBeenCalledWith(
       expect.stringContaining('Failed to load workspace config'),
       expect.anything()

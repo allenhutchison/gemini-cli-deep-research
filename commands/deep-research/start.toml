@@ -42,5 +42,6 @@ Suggest one of the following output formats to the user, or ask them to define t
 Once the user confirms the detailed prompt and format:
 1. Check for available file search stores using `file_search_list_stores`.
 2. Ask if they want to include specific stores for grounding.
-3. Call `research_start` with the *refined, detailed prompt* (including the formatting instructions) and any selected store names.
+3. Ask the user where they'd like the report written (default: `research-report.md` in the current directory).
+4. Call `research_start` with the *refined, detailed prompt* (including the formatting instructions), any selected store names, and the chosen `outputPath`. The server will poll in the background and write the file automatically when research finishes (10–30 minutes typical) — the user can keep working in the meantime.
 """

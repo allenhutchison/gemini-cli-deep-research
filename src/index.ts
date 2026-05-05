@@ -12,6 +12,7 @@ import {
   ReportGenerator,
 } from '@allenhutchison/gemini-utils';
 import { WorkspaceConfigManager, WorkspaceOperationStorage } from './config/WorkspaceConfig.js';
+import { ResearchWatcher } from './ResearchWatcher.js';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -68,6 +69,17 @@ function getResearchManager(): ResearchManager {
 
 const uploadOperationManager = new UploadOperationManager(new WorkspaceOperationStorage());
 const reportGenerator = new ReportGenerator();
+
+let _researchWatcher: ResearchWatcher | undefined;
+function getResearchWatcher(): ResearchWatcher {
+  if (!_researchWatcher) {
+    _researchWatcher = new ResearchWatcher({
+      researchManager: getResearchManager(),
+      reportGenerator,
+    });
+  }
+  return _researchWatcher;
+}
 
 declare const PKG_VERSION: string;
 
@@ -303,15 +315,16 @@ server.registerTool(
 server.registerTool(
   'research_start',
   {
-    description: 'Starts a new Deep Research interaction in the background.',
+    description: 'Starts a new Deep Research interaction in the background. If outputPath is provided, the server polls the API on its own and writes the markdown report to that path when the interaction completes — no follow-up tool call required.',
     inputSchema: z.object({
       input: z.string().describe('The research query or instructions'),
       report_format: z.string().optional().describe('The desired format of the report (e.g., "Executive Brief", "Technical Deep Dive", "Comprehensive Research Report")'),
       model: z.string().optional().default('deep-research-pro-preview-12-2025').describe('The agent to use (default: deep-research-pro-preview-12-2025)'),
       fileSearchStoreNames: z.array(z.string()).optional().describe('Optional list of file search store names for grounding'),
+      outputPath: z.string().optional().describe('Optional path to write the markdown report to when research completes. The server polls in the background and writes the file automatically; on failure, an error message including the interaction ID is written instead.'),
     }).shape,
   },
-  async ({ input, report_format, model, fileSearchStoreNames }) => {
+  async ({ input, report_format, model, fileSearchStoreNames, outputPath }) => {
     let finalInput = input;
     if (report_format) {
       finalInput = `[Report Format: ${report_format}]\n\n${input}`;
@@ -325,11 +338,17 @@ server.registerTool(
       });
       if (interaction.id) {
           WorkspaceConfigManager.addResearchId(interaction.id);
+          if (outputPath) {
+            getResearchWatcher().track(interaction.id, outputPath);
+          }
       }
+      const followUp = outputPath
+        ? `The report will be written to ${outputPath} when research completes.`
+        : `Use research_status to check progress.`;
       return {
         content: [{
           type: 'text',
-          text: `Research started. ID: ${interaction.id}\nStatus: ${interaction.status}\nUse research_status to check progress.`
+          text: `Research started. ID: ${interaction.id}\nStatus: ${interaction.status}\n${followUp}`
         }]
       };
     } catch (error: unknown) {
@@ -410,6 +429,17 @@ async function main(): Promise<void> {
   WorkspaceConfigManager.load();
   await server.connect(transport);
   console.error('Gemini Deep Research MCP server running on stdio');
+
+  // Resume background polling for any research interactions that were
+  // in flight when the previous server process exited. Only attempt this
+  // when an API key is configured, so we don't crash startup on misconfig.
+  if (apiKey) {
+    try {
+      getResearchWatcher().resumeAll();
+    } catch (err) {
+      console.error('Failed to resume in-flight research watchers:', err);
+    }
+  }
 }
 
 main().catch((error) => {
