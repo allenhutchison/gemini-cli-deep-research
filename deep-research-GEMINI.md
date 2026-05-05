@@ -49,7 +49,7 @@ When performing research or querying data, strictly follow this ordering:
 
 3.  **Completion**:
     -   Preferred: pass `outputPath` to `research_start` so the report writes itself when research finishes (10–30 minutes typical). The user can keep working in the meantime; when they ask about the results, read the file.
-    -   Fallback (no `outputPath`): use `research_status` to monitor and `research_save_report` to write the markdown when status is `completed`.
+    -   Fallback (no `outputPath`): use `research_status` to monitor and `research_save_report` to write the Markdown when status is `completed`.
     -   On failure with `outputPath` set, the file is still written but contains an error message and the interaction ID, which can be passed to `research_status` for further inspection.
 
 Always provide the user with the Research ID or Store Name when initiating background tasks or creating resources.
