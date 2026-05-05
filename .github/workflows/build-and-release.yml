@@ -87,7 +87,7 @@ jobs:
           errors=()
 
           # Validate required directories exist
-          for dir in dist commands; do
+          for dir in dist commands skills; do
             if [[ ! -d "$dir" ]]; then
               errors+=("Missing required directory: $dir")
             fi
@@ -114,6 +114,7 @@ jobs:
             --transform 's|release/gemini-extension.json|gemini-extension.json|' \
             dist \
             commands \
+            skills \
             release/gemini-extension.json \
             deep-research-GEMINI.md
 
