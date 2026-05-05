@@ -94,7 +94,7 @@ jobs:
           done
 
           # Validate required files exist
-          for file in release/gemini-extension.json deep-research-GEMINI.md dist/index.js; do
+          for file in release/gemini-extension.json deep-research-GEMINI.md dist/index.js skills/deep-research-start/SKILL.md; do
             if [[ ! -f "$file" ]]; then
               errors+=("Missing required file: $file")
             fi
