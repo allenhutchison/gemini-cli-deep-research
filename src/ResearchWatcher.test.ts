@@ -55,7 +55,7 @@ describe('ResearchWatcher', () => {
     mockGenerateMarkdown = jest.fn();
   });
 
-  function makeWatcher() {
+  function makeWatcher(): InstanceType<typeof ResearchWatcher> {
     return new ResearchWatcher({
       researchManager: { poll: mockPoll as never },
       reportGenerator: { generateMarkdown: mockGenerateMarkdown as never },
