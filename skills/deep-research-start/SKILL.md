@@ -41,6 +41,6 @@ Call `research_start` with:
 
 - `input`: the refined prompt **with the formatting instructions inlined** (e.g. prefix with `[Report Format: Technical Deep Dive]\n\n…`, or use the `report_format` parameter).
 - `fileSearchStoreNames`: any stores selected in step 3.
-- `outputPath`: the path from step 4. **Always pass this** — the MCP server will poll the API on its own and write the markdown report to that path on completion. The user can keep working on other things in the meantime; no follow-up `research_status` / `research_save_report` call is needed.
+- `outputPath`: the path from step 4. **Always pass this** — the MCP server will poll the API on its own and write the markdown report to that path on completion. The user can keep working on other things while it runs; no follow-up `research_status` / `research_save_report` call is needed.
 
 Confirm to the user: the interaction ID, where the report will be written, and that they can keep working — the file will appear when research finishes (10–30 minutes typical).
