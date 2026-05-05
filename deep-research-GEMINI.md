@@ -30,9 +30,9 @@ The extension automatically manages a `.gemini-research.json` file in the curren
 - `file_search_query`: Ask a specific question against a file search store for grounded answers.
 
 ### Deep Research
-- `research_start`: Start a long-running background research task. You can ground it in your uploaded files by providing `fileSearchStoreNames`. Use `report_format` to specify the desired output structure (e.g., "Executive Brief", "Technical Deep Dive", "Comprehensive Research Report").
-- `research_status`: Check if the research is done and retrieve the results.
-- `research_save_report`: Once completed, save the findings as a professional Markdown report.
+- `research_start`: Start a long-running background research task. You can ground it in your uploaded files by providing `fileSearchStoreNames`. Use `report_format` to specify the desired output structure (e.g., "Executive Brief", "Technical Deep Dive", "Comprehensive Research Report"). Pass `outputPath` to have the server write the markdown report to that file automatically when research completes — recommended for the typical "kick it off and come back later" flow, since it removes the need for the agent to poll or save explicitly.
+- `research_status`: Check if the research is done and retrieve the results. Only needed when `outputPath` was *not* given to `research_start`, or when the user wants a progress update mid-flight.
+- `research_save_report`: Save the findings as a Markdown report. Only needed when `outputPath` was not given to `research_start`, or when the user wants a second copy in a different location.
 
 ## Tool Dependencies & Workflow
 
@@ -48,7 +48,8 @@ When performing research or querying data, strictly follow this ordering:
     -   For direct questions about specific files: Use `file_search_query`.
 
 3.  **Completion**:
-    -   For deep research, use `research_status` to monitor progress.
-    -   Finalize by generating a report with `research_save_report`.
+    -   Preferred: pass `outputPath` to `research_start` so the report writes itself when research finishes (10–30 minutes typical). The user can keep working in the meantime; when they ask about the results, read the file.
+    -   Fallback (no `outputPath`): use `research_status` to monitor and `research_save_report` to write the Markdown when status is `completed`.
+    -   On failure with `outputPath` set, the file is still written but contains an error message and the interaction ID, which can be passed to `research_status` for further inspection.
 
 Always provide the user with the Research ID or Store Name when initiating background tasks or creating resources.

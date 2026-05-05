@@ -16,6 +16,7 @@ const mockUpdateProgress = jest.fn();
 const mockAddFailedFile = jest.fn();
 const mockStartResearch = jest.fn();
 const mockGetStatus = jest.fn();
+const mockPoll = jest.fn();
 const mockGenerateMarkdown = jest.fn();
 
 jest.unstable_mockModule('@allenhutchison/gemini-utils', () => ({
@@ -41,6 +42,7 @@ jest.unstable_mockModule('@allenhutchison/gemini-utils', () => ({
   ResearchManager: jest.fn().mockImplementation(() => ({
     startResearch: mockStartResearch,
     getStatus: mockGetStatus,
+    poll: mockPoll,
   })),
   ReportGenerator: jest.fn().mockImplementation(() => ({
     generateMarkdown: mockGenerateMarkdown,
@@ -77,12 +79,18 @@ jest.unstable_mockModule('fs', () => ({
 const mockAddFileSearchStore = jest.fn();
 const mockAddResearchId = jest.fn();
 const mockLoad = jest.fn();
+const mockAddPendingResearch = jest.fn();
+const mockRemovePendingResearch = jest.fn();
+const mockGetAllPendingResearch = jest.fn(() => ({}));
 
 jest.unstable_mockModule('./config/WorkspaceConfig.js', () => ({
   WorkspaceConfigManager: {
     addFileSearchStore: mockAddFileSearchStore,
     addResearchId: mockAddResearchId,
     load: mockLoad,
+    addPendingResearch: mockAddPendingResearch,
+    removePendingResearch: mockRemovePendingResearch,
+    getAllPendingResearch: mockGetAllPendingResearch,
   },
   WorkspaceOperationStorage: jest.fn(),
 }));
@@ -489,6 +497,43 @@ describe('MCP Server Tools', () => {
       expect(result.content[0].text).toContain('Research failed to start');
       expect(result.content[0].text).toContain('Network connection failed');
       expect(result.content[0].text).not.toContain('paid Google AI API key');
+    });
+
+    it('registers a background watcher and reports the output path when outputPath is provided', async () => {
+      mockStartResearch.mockResolvedValue({
+        id: 'research-out-1',
+        status: 'in_progress',
+      });
+      // Keep the poll pending so the watcher doesn't try to write a file
+      // during this test (we cover the write path in ResearchWatcher.test.ts).
+      mockPoll.mockReturnValue(new Promise(() => {}));
+
+      const result = await toolHandlers['research_start']({
+        input: 'Research with output path',
+        model: 'deep-research-pro-preview-12-2025',
+        outputPath: 'reports/out.md',
+      }) as McpToolResult;
+
+      expect(mockAddResearchId).toHaveBeenCalledWith('research-out-1');
+      expect(mockAddPendingResearch).toHaveBeenCalledWith('research-out-1', 'reports/out.md');
+      expect(mockPoll).toHaveBeenCalledWith('research-out-1', expect.any(Number));
+      expect(result.content[0].text).toContain('reports/out.md');
+      expect(result.content[0].text).not.toContain('Use research_status to check progress');
+    });
+
+    it('does not register a watcher when outputPath is omitted', async () => {
+      mockStartResearch.mockResolvedValue({
+        id: 'research-noop-1',
+        status: 'in_progress',
+      });
+
+      await toolHandlers['research_start']({
+        input: 'Research without output path',
+        model: 'deep-research-pro-preview-12-2025',
+      });
+
+      expect(mockAddPendingResearch).not.toHaveBeenCalled();
+      expect(mockPoll).not.toHaveBeenCalled();
     });
   });
 

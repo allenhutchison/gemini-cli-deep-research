@@ -28,10 +28,17 @@ const UploadOperationSchema = z.object({
   error: z.string().optional(),
 });
 
+const PendingResearchSchema = z.object({
+  outputPath: z.string(),
+});
+
+export type PendingResearch = z.infer<typeof PendingResearchSchema>;
+
 export const WorkspaceConfigSchema = z.object({
   researchIds: z.array(z.string()).default([]),
   fileSearchStores: z.record(z.string(), z.string()).default({}),
   uploadOperations: z.record(z.string(), UploadOperationSchema).default({}),
+  pendingResearch: z.record(z.string(), PendingResearchSchema).default({}),
 });
 
 export type WorkspaceConfig = z.infer<typeof WorkspaceConfigSchema>;
@@ -41,7 +48,7 @@ export class WorkspaceConfigManager {
 
   static load(): WorkspaceConfig {
     if (!fs.existsSync(this.configPath)) {
-      const defaultConfig: WorkspaceConfig = { researchIds: [], fileSearchStores: {}, uploadOperations: {} };
+      const defaultConfig: WorkspaceConfig = { researchIds: [], fileSearchStores: {}, uploadOperations: {}, pendingResearch: {} };
       this.save(defaultConfig);
       return defaultConfig;
     }
@@ -53,7 +60,7 @@ export class WorkspaceConfigManager {
     } catch (error) {
       // If file is corrupt, safer to return default to avoid crashing, but warn the user
       console.warn(`Failed to load workspace config from ${this.configPath}:`, error);
-      return { researchIds: [], fileSearchStores: {}, uploadOperations: {} };
+      return { researchIds: [], fileSearchStores: {}, uploadOperations: {}, pendingResearch: {} };
     }
   }
 
@@ -89,6 +96,25 @@ export class WorkspaceConfigManager {
   static getAllUploadOperations(): Record<string, UploadOperation> {
     const config = this.load();
     return config.uploadOperations;
+  }
+
+  static addPendingResearch(id: string, outputPath: string): void {
+    const config = this.load();
+    config.pendingResearch[id] = { outputPath };
+    this.save(config);
+  }
+
+  static removePendingResearch(id: string): void {
+    const config = this.load();
+    if (config.pendingResearch[id]) {
+      delete config.pendingResearch[id];
+      this.save(config);
+    }
+  }
+
+  static getAllPendingResearch(): Record<string, PendingResearch> {
+    const config = this.load();
+    return config.pendingResearch;
   }
 }
 
