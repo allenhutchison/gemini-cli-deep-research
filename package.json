@@ -30,14 +30,14 @@
     "@types/jest": "^30.0.0",
     "@types/node": "^25.9.1",
     "esbuild": "^0.28.1",
-    "eslint": "^10.5.0",
+    "eslint": "^10.6.0",
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30.4.2",
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.3",
     "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.61.1"
+    "typescript-eslint": "^8.62.0"
   },
   "dependencies": {
     "@allenhutchison/gemini-utils": "^0.6.0",
