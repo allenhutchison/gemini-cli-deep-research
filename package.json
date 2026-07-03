@@ -1,6 +1,6 @@
 {
   "name": "gemini-deep-research",
-  "version": "0.2.11",
+  "version": "0.3.0",
   "description": "A deep research extension for Gemini CLI",
   "main": "dist/index.js",
   "scripts": {
