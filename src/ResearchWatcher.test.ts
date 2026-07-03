@@ -68,7 +68,7 @@ describe('ResearchWatcher', () => {
     mockPoll.mockResolvedValue({
       id: 'r-1',
       status: 'completed',
-      outputs: [{ kind: 'text', text: 'hello' }],
+      steps: [{ type: 'model_output', content: [{ type: 'text', text: 'hello' }] }],
     } as never);
     mockGenerateMarkdown.mockReturnValue('# Report' as never);
 
@@ -88,7 +88,7 @@ describe('ResearchWatcher', () => {
     mockPoll.mockResolvedValue({
       id: 'r-2',
       status: 'failed',
-      outputs: [],
+      steps: [],
     } as never);
 
     const watcher = makeWatcher();
@@ -144,7 +144,7 @@ describe('ResearchWatcher', () => {
     // While the poll is in flight, pending state should include r-5.
     expect(configState).toEqual({ 'r-5': { outputPath: 'report.md' } });
 
-    resolvePoll({ id: 'r-5', status: 'completed', outputs: [{ kind: 'text', text: 'ok' }] });
+    resolvePoll({ id: 'r-5', status: 'completed', steps: [{ type: 'model_output', content: [{ type: 'text', text: 'ok' }] }] });
     mockGenerateMarkdown.mockReturnValue('done' as never);
     await watcher.settle();
 
@@ -156,7 +156,7 @@ describe('ResearchWatcher', () => {
       'r-a': { outputPath: 'a.md' },
       'r-b': { outputPath: 'b.md' },
     };
-    mockPoll.mockResolvedValue({ id: 'x', status: 'failed', outputs: [] } as never);
+    mockPoll.mockResolvedValue({ id: 'x', status: 'failed', steps: [] } as never);
 
     const watcher = makeWatcher();
     watcher.resumeAll();
@@ -170,7 +170,7 @@ describe('ResearchWatcher', () => {
     mockPoll.mockResolvedValue({
       id: 'r-6',
       status: 'completed',
-      outputs: [{ kind: 'text', text: 'x' }],
+      steps: [{ type: 'model_output', content: [{ type: 'text', text: 'x' }] }],
     } as never);
     mockGenerateMarkdown.mockReturnValue('# r' as never);
 

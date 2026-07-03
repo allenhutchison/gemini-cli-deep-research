@@ -47,6 +47,11 @@ jest.unstable_mockModule('@allenhutchison/gemini-utils', () => ({
   ReportGenerator: jest.fn().mockImplementation(() => ({
     generateMarkdown: mockGenerateMarkdown,
   })),
+  // Mirrors the real implementation: flattens model_output steps into content
+  extractOutputs: (interaction: { steps?: Array<{ type: string; content?: unknown[] }> }): unknown[] =>
+    (interaction.steps ?? [])
+      .filter((step) => step.type === 'model_output')
+      .flatMap((step) => step.content ?? []),
   Interaction: {},
   TextContent: {},
 }));
@@ -353,7 +358,7 @@ describe('MCP Server Tools', () => {
   describe('file_search_query', () => {
     it('should query store and return text response', async () => {
       mockQueryStore.mockResolvedValue({
-        outputs: [{ type: 'text', text: 'Here is the answer.' }],
+        steps: [{ type: 'model_output', content: [{ type: 'text', text: 'Here is the answer.' }] }],
       });
 
       const result = await toolHandlers['file_search_query']({
@@ -368,7 +373,7 @@ describe('MCP Server Tools', () => {
     });
 
     it('should return default message if no outputs', async () => {
-      mockQueryStore.mockResolvedValue({ outputs: null });
+      mockQueryStore.mockResolvedValue({ steps: [] });
 
       const result = await toolHandlers['file_search_query']({
         query: 'Test query',
@@ -542,7 +547,7 @@ describe('MCP Server Tools', () => {
       const mockInteraction = {
         id: 'research-123',
         status: 'completed',
-        outputs: [{ type: 'text', text: 'Final report' }],
+        steps: [{ type: 'model_output', content: [{ type: 'text', text: 'Final report' }] }],
       };
       mockGetStatus.mockResolvedValue(mockInteraction);
 
@@ -580,7 +585,7 @@ describe('MCP Server Tools', () => {
       mockGetStatus.mockResolvedValue({
         id: 'research-123',
         status: 'completed',
-        outputs: null,
+        steps: [],
       });
 
       const result = await toolHandlers['research_save_report']({
@@ -598,7 +603,7 @@ describe('MCP Server Tools', () => {
       mockGetStatus.mockResolvedValue({
         id: 'research-123',
         status: 'completed',
-        outputs: [{ type: 'text', text: 'Report content' }],
+        steps: [{ type: 'model_output', content: [{ type: 'text', text: 'Report content' }] }],
       });
       mockGenerateMarkdown.mockReturnValue('# Generated Report\n\nContent here.');
 

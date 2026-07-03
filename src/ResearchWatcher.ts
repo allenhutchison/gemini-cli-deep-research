@@ -4,6 +4,7 @@ import {
   Interaction,
   ReportGenerator,
   ResearchManager,
+  extractOutputs,
 } from '@allenhutchison/gemini-utils';
 import { WorkspaceConfigManager } from './config/WorkspaceConfig.js';
 
@@ -78,9 +79,10 @@ export class ResearchWatcher {
       return;
     }
 
-    if (interaction.status === 'completed' && interaction.outputs) {
+    const outputs = extractOutputs(interaction);
+    if (interaction.status === 'completed' && outputs.length > 0) {
       try {
-        const markdown = this.reportGenerator.generateMarkdown(interaction.outputs);
+        const markdown = this.reportGenerator.generateMarkdown(outputs);
         fs.writeFileSync(resolved, markdown);
       } catch (err) {
         this.writeError(resolved, id, err instanceof Error ? err.message : String(err));
