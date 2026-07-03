@@ -10,6 +10,7 @@ import {
   TextContent,
   ResearchManager,
   ReportGenerator,
+  extractOutputs,
 } from '@allenhutchison/gemini-utils';
 import { WorkspaceConfigManager, WorkspaceOperationStorage } from './config/WorkspaceConfig.js';
 import { ResearchWatcher } from './ResearchWatcher.js';
@@ -291,13 +292,8 @@ server.registerTool(
     try {
       const interaction: Interaction = await getFileSearchManager().queryStore(storeName, query, defaultModel);
 
-      // Runtime guard: ensure outputs is an array
-      if (!interaction.outputs || !Array.isArray(interaction.outputs)) {
-        return { content: [{ type: 'text', text: 'No response generated.' }] };
-      }
-
-      // Find the first text output with proper type guard
-      const textOutput = interaction.outputs.find(
+      // SDK v2 returns output content inside `model_output` steps
+      const textOutput = extractOutputs(interaction).find(
         (output): output is TextContent => output.type === 'text'
       );
       const text = textOutput?.text || 'No response generated.';
@@ -408,11 +404,12 @@ server.registerTool(
       return { isError: true, content: [{ type: 'text', text: `Interaction ${id} is not completed. Current status: ${interaction.status}` }] };
     }
     
-    if (!interaction.outputs) {
+    const outputs = extractOutputs(interaction);
+    if (outputs.length === 0) {
       return { isError: true, content: [{ type: 'text', text: 'No outputs found for this interaction.' }] };
     }
 
-    const markdown = reportGenerator.generateMarkdown(interaction.outputs);
+    const markdown = reportGenerator.generateMarkdown(outputs);
     const resolvedPath = path.isAbsolute(filePath)
       ? filePath
       : path.resolve(process.env.GEMINI_WORKSPACE_PATH || '.', filePath);
