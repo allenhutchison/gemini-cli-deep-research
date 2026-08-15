@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.3.1](https://github.com/allenhutchison/gemini-cli-deep-research/compare/v0.3.0...v0.3.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* **deps:** bump @google/genai in the production-dependencies group ([c7058f5](https://github.com/allenhutchison/gemini-cli-deep-research/commit/c7058f5072f58e30b640f113117151469c338d19))
+* **deps:** bump the production-dependencies group with 2 updates ([721715d](https://github.com/allenhutchison/gemini-cli-deep-research/commit/721715d5de4a7ce83f5c1611c5977ada450c9891))
+* **deps:** bump the production-dependencies group with 2 updates ([3542098](https://github.com/allenhutchison/gemini-cli-deep-research/commit/354209828f44dacd5d4b4af72c19cdff37a42e64))
+
 ## [0.3.0](https://github.com/allenhutchison/gemini-cli-deep-research/compare/v0.2.11...v0.3.0) (2026-07-03)
 
 
